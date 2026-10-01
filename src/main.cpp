@@ -8,15 +8,15 @@
 // Chassis constructor
 ez::Drive chassis(
     // These are your drive motors, the first motor is used for sensing!
-    {1, 2, 3},     // Left Chassis Ports (negative port will reverse it!)
-    {-4, -5, -6},  // Right Chassis Ports (negative port will reverse it!)
+    {-8, -10},     // Left Chassis Ports (negative port will reverse it!)
+    {11, 13},  // Right Chassis Ports (negative port will reverse it!)
 
     7,      // IMU Port
     2.75,  // Wheel Diameter (Remember, 4" wheels without screw holes are actually 4.125!)
     450);   // Wheel RPM = cartridge * (motor gear / wheel gear)
 
 // Uncomment the trackers you're using here!
-// - `8` and `9` are smart ports (making these negative will reverse the sensor)
+// - `8` and `9` are smart ports (paking these negative will reverse the sensor)
 //  - you should get positive values on the encoders going FORWARD and RIGHT
 // - `2.75` is the wheel diameter
 // - `4.0` is the distance from the center of the wheel to the center of the robot
@@ -45,9 +45,9 @@ void initialize() {
   // chassis.odom_tracker_left_set(&vert_tracker);
 
   // Configure your chassis controls
-  chassis.opcontrol_curve_buttons_toggle(true);   // Enables modifying the controller curve with buttons on the joysticks
-  chassis.opcontrol_drive_activebrake_set(0.0);   // Sets the active brake kP. We recommend ~2.  0 will disable.
-  chassis.opcontrol_curve_default_set(0.0, 0.0);  // Defaults for curve. If using tank, only the first parameter is used. (Comment this line out if you have an SD card!)
+  chassis.opcontrol_curve_buttons_toggle(false);   // Enables modifying the controller curve with buttons on the joysticks
+  chassis.opcontrol_drive_activebrake_set(1);   // Sets the active brake kP. We recommend ~2.  0 will disable.
+  chassis.opcontrol_curve_default_set(2, 2);  // Defaults for curve. If using tank, only the first parameter is used. (Comment this line out if you have an SD card!)
 
   // Set the drive to your own constants from autons.cpp!
   default_constants();
@@ -62,7 +62,7 @@ void initialize() {
   });
 
   // Initialize chassis and auton selector
-  chassis.initialize();
+  chassis.initialize(); 
   ez::as::initialize();
   master.rumble(chassis.drive_imu_calibrated() ? "." : "---");
 }
@@ -229,12 +229,27 @@ void ez_template_extras() {
 void opcontrol() {
   // This is preference to what you like to drive on
   chassis.drive_brake_set(MOTOR_BRAKE_COAST);
+  
+    //changing voltage to have motors synced
+  // pros::Motor motor1(1);
+  // pros::Motor motor11(11);
+  // pros::Motor motor12(12);
+  // pros::Motor motor10(10);
+  // pros::Motor motor18(18);
+  // pros::Motor motor20(20);
+  // motor1.set_voltage_limit(5000);
+  // motor11.set_voltage_limit(5000);
+  // motor12.set_voltage_limit(5000);
+  // motor10.set_voltage_limit(5000);
+  // motor18.set_voltage_limit(5000);
+  // motor20.set_voltage_limit(5000);
 
+  
   while (true) {
     // Gives you some extras to make EZ-Template ezier
     ez_template_extras();
 
-    // chassis.opcontrol_tank();  // Tank control
+    chassis.opcontrol_tank();  // Tank control
     // chassis.opcontrol_arcade_standard(ez::SPLIT);   // Standard split arcade
     // chassis.opcontrol_arcade_standard(ez::SINGLE);  // Standard single arcade
     // chassis.opcontrol_arcade_flipped(ez::SPLIT);    // Flipped split arcade
