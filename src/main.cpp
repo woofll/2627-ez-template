@@ -23,12 +23,34 @@ ez::Drive chassis(
 // ez::tracking_wheel horiz_tracker(8, 2.75, 4.0);  // This tracking wheel is perpendicular to the drive wheels
 // ez::tracking_wheel vert_tracker(9, 2.75, 4.0);   // This tracking wheel is parallel to the drive wheels
 
-/**
- * Runs initialization code. This occurs as soon as the program is started.
- *
- * All other competition modes are blocked by initialize; it is recommended
- * to keep execution time for this mode under a few seconds.
- */
+
+
+/************************************************************************************************************************** */
+const int CLAWnumStates = 5; 
+int CLAWstates[CLAWnumStates] = {0, 50, 100, 200, 400}; //50 = 20deg, 100 = 40 deg; 2.5 = 1deg; ok this is only on the device screen
+int CLAWcurrState = 0;
+int CLAWtarget = 0;
+
+void CLAWnextState() {
+  CLAWcurrState += 1;
+  if (CLAWcurrState == 5) {
+    CLAWcurrState = 0;
+  }
+
+  CLAWtarget = CLAWstates[CLAWcurrState];
+}
+
+void CLAWliftControl() {
+  double kp = 0.72;
+  double error = CLAWtarget - (global::testMotor.get_position());
+  //  double error = CLAWtarget - (global::rotCascade.get_position()/100.0);
+  double velocity = kp * error;
+  global::testMotor.move(velocity); 
+
+}
+/************************************************************************************************************************** */
+
+
 void initialize() {
   // Print our branding over your terminal :D
   ez::ez_template_print();
@@ -65,6 +87,15 @@ void initialize() {
   chassis.initialize(); 
   ez::as::initialize();
   master.rumble(chassis.drive_imu_calibrated() ? "." : "---");
+
+pros::Task CLAWliftControlTask([] {
+  while (true) {
+    CLAWliftControl();
+    pros::delay(10);
+  }
+  });
+
+
 }
 
 /**
@@ -226,31 +257,22 @@ void ez_template_extras() {
  * operator control task will be stopped. Re-enabling the robot will restart the
  * task, not resume it from where it left off.
  */
+
+
+
 void opcontrol() {
   // This is preference to what you like to drive on
   chassis.drive_brake_set(MOTOR_BRAKE_COAST);
-  
-    //changing voltage to have motors synced
-  // pros::Motor motor1(1);
-  // pros::Motor motor11(11);
-  // pros::Motor motor12(12);
-  // pros::Motor motor10(10);
-  // pros::Motor motor18(18);
-  // pros::Motor motor20(20);
-  // motor1.set_voltage_limit(5000);
-  // motor11.set_voltage_limit(5000);
-  // motor12.set_voltage_limit(5000);
-  // motor10.set_voltage_limit(5000);
-  // motor18.set_voltage_limit(5000);
-  // motor20.set_voltage_limit(5000);
-
+    int testVar = 0;
   
   while (true) {
     // Gives you some extras to make EZ-Template ezier
-    ez_template_extras();
-
-    chassis.opcontrol_tank();  // Tank control
-    // chassis.opcontrol_arcade_standard(ez::SPLIT);   // Standard split arcade
+    ez_template_extras();   
+      pros::lcd::set_text(4, std::to_string(global::testMotor.get_position()));
+    pros::lcd::set_text(5, std::to_string(CLAWcurrState));
+      pros::lcd::set_text(6, std::to_string(testVar));
+    // chassis.opcontrol_tank();  // Tank control
+    chassis.opcontrol_arcade_standard(ez::SPLIT);   // Standard split arcade
     // chassis.opcontrol_arcade_standard(ez::SINGLE);  // Standard single arcade
     // chassis.opcontrol_arcade_flipped(ez::SPLIT);    // Flipped split arcade
     // chassis.opcontrol_arcade_flipped(ez::SINGLE);   // Flipped single arcade
@@ -258,6 +280,22 @@ void opcontrol() {
     // . . .
     // Put more user control code here!
     // . . .
+
+    // if(master.get_digital_new_press(DIGITAL_L1)) {
+    //   CLAWnextState();
+    // }
+
+    if (master.get_digital(DIGITAL_L1)){
+      global::testMotor.move_velocity(600);
+    } else {
+      global::testMotor.brake();
+    }
+
+    if (master.get_digital_new_press(DIGITAL_A)){
+      CLAWnextState();
+      testVar += 1; 
+      // pros::delay(20);
+    }
 
     pros::delay(ez::util::DELAY_TIME);  // This is used for timer calculations!  Keep this ez::util::DELAY_TIME
   }
