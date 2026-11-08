@@ -9,13 +9,16 @@ namespace global {
 extern pros::Motor intake;
 extern pros::Motor cascadeLeft;
 extern pros::Motor cascadeRight;
-extern pros::Motor clawGrabber;
-extern pros::Motor clawWrist;
+extern pros::MotorGroup cascade;
+
+extern pros::Distance clawDistance;
 
 extern pros::Rotation horiOdom;
 extern pros::Rotation vertOdom;
 extern pros::Rotation rotCascade;
 
-extern pros::Motor testMotor;
+extern pros::adi::Pneumatics wrist;
+extern pros::adi::Pneumatics claw;
 
+extern pros::Motor testMotor;
 }

@@ -425,7 +425,8 @@
     },
     "upload_options": {
       "description": "dt t",
-      "slot": 1
+      "slot": 1,
+      "icon": "planet"
     },
     "use_early_access": false
   }

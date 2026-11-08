@@ -7,6 +7,12 @@ namespace global{
 
 
 // pros::Motor testMotor(1, pros::v5::MotorGearset::rpm_600);
-pros::Motor testMotor(1, pros::v5::MotorGearset::rpm_200);
+pros::Motor intake(9, pros::v5::MotorGearset::rpm_600);
+pros::Motor cascadeLeft(12, pros::v5::MotorGearset::rpm_200);//NOT CORRECT
+pros::Motor cascadeRight(-10, pros::v5::MotorGearset::rpm_200);
+pros::Distance clawDistance(19);
+pros::MotorGroup cascade({12, -10});
+pros::adi::Pneumatics claw('A', false);
+pros::adi::Pneumatics wrist('B', true);
 
 }

@@ -16,12 +16,12 @@ const int SWING_SPEED = 110;
 void default_constants() {
   // chassis.drive_imu_scaler_set(1.05);
   // P, I, D, and Start I
-  chassis.pid_drive_constants_set(20.0, 0.0, 100.0);         // Fwd/rev constants, used for odom and non odom motions
-  chassis.pid_heading_constants_set(11.0, 0.0, 20.0);        // Holds the robot straight while going forward without odom
-  chassis.pid_turn_constants_set(3.0, 0.05, 20.0, 15.0);     // Turn in place constants
-  chassis.pid_swing_constants_set(6.0, 0.0, 65.0);           // Swing constants
-  chassis.pid_odom_angular_constants_set(6.5, 0.0, 52.5);    // Angular control for odom motions
-  chassis.pid_odom_boomerang_constants_set(5.8, 0.0, 32.5);  // Angular control for boomerang motions
+  chassis.pid_drive_constants_set(12.5, 0.0, 100.0);         // Fwd/rev constants, DONE
+  chassis.pid_heading_constants_set(15.0, 0.0, 45.0);       // Heading constants, DONE 
+  chassis.pid_turn_constants_set(3.6, 0.125, 20.0, 15.0);     // Turning constants, DONE
+  chassis.pid_swing_constants_set(6.0, 0.0, 65.0);           // 
+  chassis.pid_odom_angular_constants_set(6.5, 0.0, 52.5);    // 
+  chassis.pid_odom_boomerang_constants_set(5.8, 0.0, 32.5);  // 
 
   // Exit conditions
   chassis.pid_turn_exit_condition_set(90_ms, 3_deg, 250_ms, 7_deg, 500_ms, 500_ms);
@@ -132,3 +132,73 @@ void measure_offsets() {
 // . . .
 // Make your own autonomous functions here!
 // . . .
+
+
+void toggleOnly(){
+  toggle();
+
+  chassis.pid_drive_set(-24, 120);
+}
+
+
+void leftZone(){
+  toggle();
+
+  global::wrist.extend();
+  global::cascade.move_relative(1000, 120);
+  pros::delay(1000);
+  chassis.pid_drive_set(-24, 100);
+  chassis.pid_wait();
+
+  chassis.pid_turn_set(90, 100);
+  chassis.pid_wait();
+
+  chassis.pid_drive_set(-30, 90);
+  chassis.pid_wait();
+  
+  // global::cascade.move_relative(-800, 100);
+  // pros::delay(1000):
+  // global::claw.extend();
+  // pros::delay(1000);
+  // chassis.pid_drive_set(12, 100);
+  // chassis.pid_wait();
+
+  // global::cascade.move_absolute(0, 120);
+  // chassis.pid_wait();
+
+}
+
+void leftCross(){
+
+}
+
+void rightZone(){
+
+}
+
+void rightCross(){
+
+}
+
+
+
+
+void fwd24(){
+  chassis.pid_drive_set(24, 120);
+  chassis.pid_wait();
+}
+
+void rev24(){
+  chassis.pid_drive_set(-24, 120);
+  chassis.pid_wait();
+}
+
+void left90(){
+  chassis.pid_turn_set(-90, 120);
+  chassis.pid_wait();
+}
+
+void right90(){
+  chassis.pid_turn_set(90, 120);
+  chassis.pid_wait();
+}
