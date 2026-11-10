@@ -8,12 +8,12 @@ void toggle(){
 chassis.pid_drive_set(-8, 120);
  chassis.pid_wait();
 
-chassis.pid_drive_set(10, 127);
+chassis.pid_drive_set(13, 127);
 chassis.pid_wait();
 
 chassis.pid_drive_set(-8, 120); 
 chassis.pid_wait();
  
-chassis.pid_drive_set(10, 127);
+chassis.pid_drive_set(13, 127);
 chassis.pid_wait();
 }

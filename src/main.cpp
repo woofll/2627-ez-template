@@ -72,7 +72,9 @@ void initialize() {
 
   // Autonomous Selector using LLEMU
   ez::as::auton_selector.autons_add({
-      {"only toggle!", toggleOnly},
+    {"RIGHT ONE PIN!", rightZone},    
+    {"LEFT ONE PIN!", leftZone},      
+    {"only toggle!", toggleOnly},
   });
 
   // Initialize chassis and auton selector
@@ -206,7 +208,7 @@ void opcontrol() {
 
 
         // pros::lcd::set_text(5, std::to_string(chassis.drive_sensor_left()));
-        pros::lcd::set_text(5, std::to_string(cascadePos));
+        pros::lcd::set_text(5, std::to_string(clawTime));
         pros::lcd::set_text(6, std::to_string(clawDisEnabled));
     // pros::lcd::set_text(6, std::to_string(chassis.drive_sensor_right()));
     //     pros::lcd::set_text(7, std::to_string(chassis.odom_theta_get()));
@@ -230,7 +232,7 @@ void opcontrol() {
       clawPos = true;
     } else if (clawPos == true){ // claw = closed
       global::claw.retract();
-      global::cascade.move_relative(500, 127);
+      global::cascade.move_relative(580, 127);
       clawPos = false;
       clawDisEnabled = false;
       clawTime = pros::millis();
@@ -241,17 +243,13 @@ void opcontrol() {
   if (master.get_digital(DIGITAL_R1)){ // Cascade UP
       global::cascade.move_velocity(200);
     } else if (master.get_digital(DIGITAL_R2)){// Cascade DOWN
-      global::cascade.move_velocity(-150);
+      global::cascade.move_velocity(-180);
     } else {
-      if ((pros::millis() - clampPressed > 450) || (pros::millis() - macroDown > 1500) ){
+      if ((pros::millis() - clampPressed > 850)){
       global::cascade.brake(); 
       }
     }
 
-  if (master.get_digital_new_press(DIGITAL_Y)) {
-    global::cascade.move_absolute(100, 200);
-    macroDown = pros::millis();
-}
 
   if (master.get_digital(DIGITAL_A)){ // Intake fwd/rev
       global::intake.move_velocity(600);
@@ -261,18 +259,23 @@ void opcontrol() {
       global::intake.brake();
   }
 
-  if (!clawDisEnabled && (pros::millis() - clawTime > 1000)){
-    clawDisEnabled = true;
-  }
+  // if ((clawDisEnabled == true) && (clawDis > 40) && (clawDis < 65) && (clawPos == true)){
+  //   global::cascade.move_relative(700, 127);
+  //   global::claw.retract(); // CLAW CLOSES
+  //   clawTime = pros::millis();
+  //   clawDisEnabled = false;
+  //   clampPressed = pros::millis();
+  //   clawPos = false;
+  // }
 
-  if (clawDisEnabled && clawDis > 40 && clawDis < 65 && clawPos == true){
-    global::cascade.move_relative(500, 127);
-    global::claw.retract(); // CLAW CLOSES
-    clawTime = pros::millis();
-    clampPressed = pros::millis();
-    clawPos = false;
-  }
+  
+  //   if (!clawDisEnabled && (pros::millis() - clawTime > 3000)){
+  //   clawDisEnabled = true;
+  // }
 
+  //   if (master.get_digital_new_press(DIGITAL_Y)) {
+//     global::cascade.move_absolute(100, 200);
+// }
   
 
   // if (master.get_digital_new_press(DIGITAL_X)){ // cascade pid states
@@ -290,7 +293,8 @@ void opcontrol() {
     // }
     //    if (master.get_digital(DIGITAL_DOWN) && master.get_digital(DIGITAL_RIGHT)){
     //   // fwd24();
-    //   leftZone();
+    //   // leftZone();
+    //   rightZone();
     // }
        // if (master.get_digital_new_press(DIGITAL_L1) && master.get_digital_new_press(DIGITAL_R1)){
     //   leftZone();

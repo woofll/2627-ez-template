@@ -144,26 +144,39 @@ void toggleOnly(){
 void leftZone(){
   toggle();
 
-  global::wrist.extend();
-  global::cascade.move_relative(1000, 120);
-  pros::delay(1000);
-  chassis.pid_drive_set(-24, 100);
+  global::wrist.retract();
+  global::cascade.move_relative(1500, 120);
+  pros::delay(500);
+  chassis.pid_drive_set(-16, 100);
   chassis.pid_wait();
 
   chassis.pid_turn_set(90, 100);
   chassis.pid_wait();
 
-  chassis.pid_drive_set(-30, 90);
+  chassis.pid_drive_set(-15, 90);
   chassis.pid_wait();
   
-  // global::cascade.move_relative(-800, 100);
-  // pros::delay(1000):
-  // global::claw.extend();
-  // pros::delay(1000);
-  // chassis.pid_drive_set(12, 100);
+  global::cascade.move_relative(-1650, 127);
+  pros::delay(1000);
+  global::claw.extend();
+  pros::delay(1000);
+  chassis.pid_drive_set(8, 100);
+  chassis.pid_wait();
+
+  // global::cascade.move_relative(-100, 120);
   // chassis.pid_wait();
 
-  // global::cascade.move_absolute(0, 120);
+  // chassis.pid_turn_set(-150, 100);
+  // chassis.pid_wait();
+  // chassis.pid_drive_set(-22, 50);
+  // chassis.pid_wait();
+  // chassis.pid_turn_set(-150, 100);
+  // chassis.pid_wait();
+  //   global::claw.retract();
+  //   chassis.pid_drive_set(-6, 50);
+  // chassis.pid_wait();
+  
+  // chassis.pid_turn_set(0, 90);
   // chassis.pid_wait();
 
 }
@@ -173,7 +186,25 @@ void leftCross(){
 }
 
 void rightZone(){
+  toggle();
+  global::wrist.retract();
+  global::cascade.move_relative(1500, 120);
+  pros::delay(500);
+  chassis.pid_drive_set(-16, 100);
+  chassis.pid_wait();
 
+  chassis.pid_turn_set(-90, 100);
+  chassis.pid_wait();
+
+  chassis.pid_drive_set(-15, 90);
+  chassis.pid_wait();
+  
+  global::cascade.move_relative(-1650, 127);
+  pros::delay(1000);
+  global::claw.extend();
+  pros::delay(1000);
+  chassis.pid_drive_set(8, 100);
+  chassis.pid_wait();
 }
 
 void rightCross(){
