@@ -15,7 +15,7 @@ extern pros::Distance clawDistance;
 
 extern pros::Rotation horiOdom;
 extern pros::Rotation vertOdom;
-extern pros::Rotation rotCascade;
+extern pros::Rotation cascadeRotation;
 
 extern pros::adi::Pneumatics wrist;
 extern pros::adi::Pneumatics claw;

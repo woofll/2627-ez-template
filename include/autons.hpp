@@ -9,7 +9,9 @@ void leftZone();
 void leftCross();
 void rightZone();
 void rightCross();
-void toggleOnly();;
+void toggleOnly();
+
+void skills();
 
 void fwd24();
 void rev24();

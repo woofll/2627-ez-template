@@ -11,6 +11,7 @@ pros::Motor intake(9, pros::v5::MotorGearset::rpm_600);
 pros::Motor cascadeLeft(8, pros::v5::MotorGearset::rpm_200);//NOT CORRECT
 pros::Motor cascadeRight(-10, pros::v5::MotorGearset::rpm_200);
 pros::Distance clawDistance(19);
+pros::Rotation cascadeRotation(4);
 pros::MotorGroup cascade({8, -10});
 pros::adi::Pneumatics claw('A', false);
 pros::adi::Pneumatics wrist('B', true);

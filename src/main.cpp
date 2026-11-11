@@ -26,33 +26,42 @@ ez::Drive chassis(
 
 /************************************************************************************************************************** */
 const int CLAWnumStates = 5; 
-int CLAWstates[CLAWnumStates] = {0, 50, 100, 200, 400}; // 50 = 20deg, 100 = 40 deg; 2.5 = 1deg
+int CLAWstates[CLAWnumStates] = {0, 100000, 200000, 300000, 400000}; //
 int CLAWcurrState = 0;
 int CLAWtarget = 0;
 
 void CLAWnextState() {
-  CLAWcurrState += 1;
-  if (CLAWcurrState == 5) {
+  CLAWcurrState++;
+
+  if (CLAWcurrState >= CLAWnumStates) {
     CLAWcurrState = 0;
   }
 
   CLAWtarget = CLAWstates[CLAWcurrState];
 }
 void CLAWbackState() {
-  CLAWcurrState -= 1;
-  if (CLAWcurrState == 0) {
-    CLAWcurrState = 5;
+  CLAWcurrState--;
+
+  if (CLAWcurrState < 0) {
+    CLAWcurrState = CLAWnumStates - 1;
   }
 
   CLAWtarget = CLAWstates[CLAWcurrState];
 }
 
-void CLAWliftControl() {
-  double kp = 0.72;
-  double error = CLAWtarget - (global::testMotor.get_position());
-  double velocity = kp * error;
-  global::testMotor.move(velocity); 
+void CLAWzeroState() {
+  CLAWcurrState = 0;
+  CLAWtarget = CLAWstates[CLAWcurrState];
 }
+
+// void CLAWliftControl() {
+//   double kp = 0.1;
+//   double error = CLAWtarget - (global::cascadeRotation.get_position());
+//   double velocity = kp * error;
+//   if (velocity > 127) velocity = 127;
+//   if (velocity < -127) velocity = -127;
+//   global::cascade.move(velocity); 
+// }
 /************************************************************************************************************************** */
 
 
@@ -65,7 +74,7 @@ void initialize() {
   // Configure your chassis controls
   chassis.opcontrol_curve_buttons_toggle(false);   // Enables modifying the controller curve with buttons on the joysticks
   chassis.opcontrol_drive_activebrake_set(2);   // Sets the active brake kP. We recommend ~2.  0 will disable.
-  chassis.opcontrol_curve_default_set(4.0, 4.0);  // Defaults for curve. If using tank, only the first parameter is used.
+  chassis.opcontrol_curve_default_set(10.0, 10.0);  // Defaults for curve. If using tank, only the first parameter is used.
 
   // Set the drive to your own constants from autons.cpp!
   default_constants();
@@ -81,9 +90,17 @@ void initialize() {
   chassis.initialize(); 
   ez::as::initialize();
   master.rumble(chassis.drive_imu_calibrated() ? "." : "---");
+  
+  global::cascade.set_zero_position(0);
+  global::cascadeRotation.set_position(0);
 
-  global::cascadeLeft.set_zero_position(0);
-  global::cascadeRight.set_zero_position(0);
+  // pros::Task liftControlTask([]{
+  //       while (true) {
+  //           CLAWliftControl();
+  //           pros::delay(10);
+  //       }
+  //   });
+
 }
 
 /**
@@ -184,107 +201,118 @@ void ez_template_extras() {
  * Runs the operator control code.
  */
 void opcontrol() {
-  chassis.drive_brake_set(MOTOR_BRAKE_COAST);
-  
-  double clawTime = 0;
-  bool clawDisEnabled = true;
-  double clampPressed = 0;
-  bool testBool = false;
-  double macroDown = 0;
 
-    bool wristPos = true; // False = vertical
-    bool clawPos = false; // False = closed
+chassis.drive_brake_set(MOTOR_BRAKE_COAST);
 
-  
-  while (true) {
-    ez_template_extras();   
+double clawCloseTime = 0; // Set time that claw closes
+double clawOpenTime = 0; // Set time that claw opens
+double cascadeStateTime = 0;
+bool clawDisEnabled = true; // Distance sensor is enabled
 
-    // chassis.opcontrol_tank();  // Tank control
-    chassis.opcontrol_arcade_standard(ez::SPLIT);   // Standard split arcade
-    global::cascade.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
-    double cascadePos = global::cascade.get_position();
-    double clawDis = global::clawDistance.get();
+bool wristPos = true; // True = wrist is UP
+bool clawPos = false; // False = claw is CLOSED
 
+while (true) {
+  ez_template_extras();
 
+  // chassis.opcontrol_tank(); // Tank control
+  chassis.opcontrol_arcade_standard(ez::SPLIT); // Standard split arcade
+  global::cascade.set_brake_mode(pros::E_MOTOR_BRAKE_HOLD);
+  double cascadePos = global::cascadeRotation.get_position();
+  double clawDis = global::clawDistance.get();
+  double curTime = pros::millis();
 
-        // pros::lcd::set_text(5, std::to_string(chassis.drive_sensor_left()));
-        pros::lcd::set_text(5, std::to_string(clawTime));
-        pros::lcd::set_text(6, std::to_string(clawDisEnabled));
-    // pros::lcd::set_text(6, std::to_string(chassis.drive_sensor_right()));
-    //     pros::lcd::set_text(7, std::to_string(chassis.odom_theta_get()));
-  
+  // pros::lcd::set_text(5, std::to_string(chassis.drive_sensor_left()));
+  // pros::lcd::set_text(5, std::to_string(clawCloseTime));
+  // pros::lcd::set_text(6, std::to_string(clawDisEnabled));
+  pros::lcd::set_text(5, std::to_string(CLAWcurrState));
+  pros::lcd::set_text(6, std::to_string(CLAWtarget));
+  pros::lcd::set_text(7, std::to_string(global::cascadeRotation.get_position()));
+  // pros::lcd::set_text(6, std::to_string(chassis.drive_sensor_right()));
+  // pros::lcd::set_text(7, std::to_string(chassis.odom_theta_get()));
 
-
-
-  if (master.get_digital_new_press(DIGITAL_UP)){ // R1 pressed, open/close
-    if (wristPos == true){ // claw = closed, so open claw
+  if (master.get_digital_new_press(DIGITAL_UP)){ // UP pressed, raise/lower wrist
+    if (wristPos == true){ // Wrist = down, so raise claw
       global::wrist.extend();
       wristPos = false;
-    } else if (wristPos == false){ // claw = open, so close claw
+    } else if (wristPos == false){ // Wrist = up, so lower claw
       global::wrist.retract();
       wristPos = true;
     }
-  } 
-
-  if (master.get_digital_new_press(DIGITAL_L1)){ // R2 pressed, hori/vert
-    if (clawPos == false){ // claw = open
-      global::claw.extend();
-      clawPos = true;
-    } else if (clawPos == true){ // claw = closed
-      global::claw.retract();
-      global::cascade.move_relative(580, 127);
-      clawPos = false;
-      clawDisEnabled = false;
-      clawTime = pros::millis();
-      clampPressed = pros::millis();
-    }
-  } 
-
-  if (master.get_digital(DIGITAL_R1)){ // Cascade UP
-      global::cascade.move_velocity(200);
-    } else if (master.get_digital(DIGITAL_R2)){// Cascade DOWN
-      global::cascade.move_velocity(-180);
-    } else {
-      if ((pros::millis() - clampPressed > 850)){
-      global::cascade.brake(); 
-      }
-    }
-
-
-  if (master.get_digital(DIGITAL_A)){ // Intake fwd/rev
-      global::intake.move_velocity(600);
-  } else if (master.get_digital(DIGITAL_B)) {
-      global::intake.move_velocity(-600);
-  } else {
-      global::intake.brake();
   }
 
-  // if ((clawDisEnabled == true) && (clawDis > 40) && (clawDis < 65) && (clawPos == true)){
-  //   global::cascade.move_relative(700, 127);
-  //   global::claw.retract(); // CLAW CLOSES
-  //   clawTime = pros::millis();
-  //   clawDisEnabled = false;
-  //   clampPressed = pros::millis();
-  //   clawPos = false;
+  if (master.get_digital_new_press(DIGITAL_L1)){ // L1 pressed, so claw opens/closes
+    if (clawPos == false){ // Claw = closed, so OPEN
+      global::claw.extend();
+      clawPos = true; // Claw is open
+
+      clawDisEnabled = false; // Distance sensor disabled
+      clawOpenTime = pros::millis(); // Update when claw is opened
+
+    } else if (clawPos == true){ // Claw = open, so CLOSE
+      global::claw.retract();
+      global::cascade.move_relative(800, 127); // Raise cascade to bring cuppin off floor
+      clawPos = false; // Claw is closed
+      clawCloseTime = pros::millis(); // Update when claw is closed
+    }
+  }
+
+  if (master.get_digital(DIGITAL_R1)){ // Cascade UP
+    global::cascade.move_velocity(200);
+    // CLAWtarget = global::cascadeRotation.get_position();
+    // global::cascadeLeft.move_velocity(200);
+  } else if (master.get_digital(DIGITAL_R2) && cascadePos > 3300 ){ // Cascade DOWN
+    global::cascade.move_velocity(-200);
+    // CLAWtarget = global::cascadeRotation.get_position();
+    // global::cascadeRight.move_velocity(200);
+  } else {
+    if ((curTime - clawCloseTime > 500) || (curTime - cascadeStateTime > 1000)) {
+
+        // CLAWliftControl();
+        global::cascade.brake();
+
+    }
+    // else {
+    //     global::cascade.brake();
+  }
+
+  // if (master.get_digital(DIGITAL_A)){ // Intake forward
+  //   global::intake.move_velocity(600);
+  // } else if (master.get_digital(DIGITAL_B)) { // Intake reverse
+  //   global::intake.move_velocity(-600);
+  // } else {
+  //   global::intake.brake();
   // }
 
-  
-  //   if (!clawDisEnabled && (pros::millis() - clawTime > 3000)){
-  //   clawDisEnabled = true;
-  // }
+  if ((clawDisEnabled == true) && (clawDis > 40) && (clawDis < 65) && (clawPos == true)){
+    global::cascade.move_relative(800, 127);
+    global::claw.retract(); // CLAW CLOSES
+    clawCloseTime = pros::millis(); // Updates the time that claw closes
+    clawDisEnabled = false; // Disables distance sensor
+    clawPos = false; // Claw is closed
+  }
 
-  //   if (master.get_digital_new_press(DIGITAL_Y)) {
-//     global::cascade.move_absolute(100, 200);
-// }
-  
+  if ((clawDisEnabled == false) && (clawPos == true) && (curTime - clawOpenTime > 2000)){ // Re-enables claw distance sensor after 3 seconds after claw first opens
+    clawDisEnabled = true;
+  }
 
-  // if (master.get_digital_new_press(DIGITAL_X)){ // cascade pid states
-  //     CLAWnextState();
-  //   } else if (master.get_digital_new_press(DIGITAL_Y)){ // go to the zero position
-  //     CLAWcurrState = 0;
-  //     CLAWtarget = CLAWstates[CLAWcurrState];
+
+  // cascade pid states
+  // if (master.get_digital_new_press(DIGITAL_X)){ 
+
+  //     CLAWnextState(); // Go UP one state
+  //     cascadeStateTime = pros::millis();
+
+  //   } else if (master.get_digital_new_press(DIGITAL_L2)){ // go to the zero position
+
+  //     CLAWzeroState(); // Go to ZERO state
+  //     cascadeStateTime = pros::millis();
+
   //   } else if (master.get_digital_new_press(DIGITAL_B)){ // go back a state
-  //     CLAWbackState();
+
+  //     CLAWbackState(); // Go BACK one state
+  //     cascadeStateTime = pros::millis();
+
   //   }
 
     // if (master.get_digital(DIGITAL_DOWN) && master.get_digital(DIGITAL_LEFT)){
@@ -304,3 +332,4 @@ void opcontrol() {
     pros::delay(ez::util::DELAY_TIME);  
   }
 }
+

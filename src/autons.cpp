@@ -233,3 +233,36 @@ void right90(){
   chassis.pid_turn_set(90, 120);
   chassis.pid_wait();
 }
+
+
+void skills(){
+
+// Phase 1 - Toggle
+chassis.pid_drive_set(-8, 120);
+chassis.pid_wait_quick_chain();
+
+chassis.pid_drive_set(13, 127);
+chassis.pid_wait_quick_chain();
+
+chassis.pid_drive_set(-8, 120); 
+chassis.pid_wait_quick_chain();
+ 
+chassis.pid_drive_set(13, 127);
+chassis.pid_wait_quick_chain();
+
+// Phase 2 - Score First Pin
+
+// Phase 3 - Score second cuppin
+
+// Phase 4 - Score third cuppin 
+
+// Phase 5 - Twice matchload
+
+// Phase 6 - Score pin on second alliance
+
+// Phase 7 - Three matchloads
+
+// Phase 8 - Second Toggle
+
+// Phase 9 - Park in the middle
+}
