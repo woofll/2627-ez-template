@@ -142,42 +142,109 @@ void toggleOnly(){
 
 
 void leftZone(){
-  toggle();
+    global::cascadeLeft.set_zero_position(0);
+  global::cascadeRight.set_zero_position(0);
+  global::cascade.set_zero_position(0);
 
-  global::wrist.retract();
-  global::cascade.move_relative(1500, 120);
-  pros::delay(500);
-  chassis.pid_drive_set(-16, 100);
-  chassis.pid_wait();
+//TOGGLE****************************************************************************************8
+chassis.pid_drive_set(-3, 127);
+ chassis.pid_wait_quick_chain();
+
+chassis.pid_drive_set(5, 127);
+ chassis.pid_wait_quick_chain();
+
+chassis.pid_drive_set(-3, 127); 
+ chassis.pid_wait_quick_chain();
+ 
+chassis.pid_drive_set(4.1, 127);
+  global::wrist.extend();
+ chassis.pid_wait_quick_chain();
+ //TOGGLE****************************************************************************************8
+
+ //FIRST PIN****************************************************************************************8
+
+  global::cascade.move_absolute(700, 127);
+  chassis.pid_drive_set(-14.5, 120);
+  chassis.pid_wait_quick();
 
   chassis.pid_turn_set(90, 100);
-  chassis.pid_wait();
+  chassis.pid_wait_quick();
 
-  chassis.pid_drive_set(-15, 90);
-  chassis.pid_wait();
+  chassis.pid_drive_set(-12, 120);
+  chassis.pid_wait_quick();
+   global::cascade.move_absolute(0, 127);
+    chassis.pid_drive_set(-1, 100);
+  chassis.pid_wait_quick_chain();
   
-  global::cascade.move_relative(-1650, 127);
-  pros::delay(1000);
   global::claw.extend();
-  pros::delay(1000);
-  chassis.pid_drive_set(8, 100);
-  chassis.pid_wait();
 
-  // global::cascade.move_relative(-100, 120);
-  // chassis.pid_wait();
+    chassis.drive_angle_set(90);
+  chassis.odom_xyt_set(0_in, 0_in, 90_deg);    // Set the current position
 
-  // chassis.pid_turn_set(-150, 100);
-  // chassis.pid_wait();
-  // chassis.pid_drive_set(-22, 50);
-  // chassis.pid_wait();
-  // chassis.pid_turn_set(-150, 100);
-  // chassis.pid_wait();
-  //   global::claw.retract();
-  //   chassis.pid_drive_set(-6, 50);
-  // chassis.pid_wait();
+  chassis.pid_drive_set(10, 110);
+  chassis.pid_wait_quick();
+
+  chassis.pid_turn_set(35, 90);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(-15, 120);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(-6, 20);
+  chassis.pid_wait_quick_chain();
+  global::cascade.move_absolute(700, 120);
+  global::claw.retract();
   
-  // chassis.pid_turn_set(0, 90);
-  // chassis.pid_wait();
+  chassis.pid_drive_set(-18, 10);
+  chassis.pid_wait_quick();
+  global::cascade.move_absolute(2300, 127);
+
+chassis.pid_swing_set(ez::RIGHT_SWING, 180_deg, -100, -65);
+chassis.pid_wait_quick();
+
+chassis.pid_drive_set(-14, 90);
+global::cascade.move_absolute(700, 100);
+chassis.pid_wait_quick();
+global::claw.extend();
+pros::delay(100);
+
+  chassis.drive_angle_set(90);
+  chassis.odom_xyt_set(0_in, 0_in, 90_deg);    // Set the current position
+
+//FIRST PIN****************************************************************************************8
+
+//SECOND PIN****************************************************************************************8
+
+global::wrist.extend();
+global::claw.extend();
+
+  chassis.pid_drive_set(10, 110);
+  chassis.pid_wait_quick();
+  global::cascade.move_absolute(0, 127);
+
+  chassis.pid_turn_set(35, 90);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(-15, 120);
+  chassis.pid_wait_quick_chain();
+  chassis.pid_drive_set(-6, 25);
+  chassis.pid_wait_quick_chain();
+  global::claw.retract();
+  global::cascade.move_absolute(400, 120);
+  chassis.pid_drive_set(-18, 10);
+  chassis.pid_wait_quick();
+  global::cascade.move_absolute(2300, 127);
+
+chassis.pid_swing_set(ez::RIGHT_SWING, 180_deg, -100, -65);
+chassis.pid_wait_quick();
+
+chassis.pid_drive_set(-14, 60);
+chassis.pid_wait_quick_chain();
+chassis.pid_drive_set(-7, 60);
+global::cascade.move_relative(-1200, 100);
+chassis.pid_wait_quick();
+global::claw.extend();
+pros::delay(300);
+chassis.pid_drive_set(-14, 60);
+chassis.pid_wait_quick_chain();
+//SECOND PIN****************************************************************************************8
 
 }
 

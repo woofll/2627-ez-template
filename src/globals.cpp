@@ -14,6 +14,6 @@ pros::Distance clawDistance(19);
 pros::Rotation cascadeRotation(4);
 pros::MotorGroup cascade({8, -10});
 pros::adi::Pneumatics claw('A', false);
-pros::adi::Pneumatics wrist('B', true);
+pros::adi::Pneumatics wrist('B', false);
 
 }
